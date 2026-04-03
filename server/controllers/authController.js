@@ -81,7 +81,7 @@ async function logout(req, res) {
 }
 
 async function getMe(req, res) {
-  return success(res, { user: req.user });
+  return success(res, { user: req.user || null });
 }
 
 module.exports = { register, login, logout, getMe };

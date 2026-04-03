@@ -83,9 +83,11 @@ describe("Auth API", () => {
       expect(res.body.data.user).toBeDefined();
     });
 
-    it("returns 401 without token", async () => {
+    it("returns null user without token", async () => {
       const res = await request(app).get("/api/auth/me");
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user).toBeNull();
     });
   });
 

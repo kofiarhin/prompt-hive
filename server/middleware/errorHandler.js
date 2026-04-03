@@ -1,7 +1,9 @@
 const { apiError } = require("../utils/apiError");
 
 function errorHandler(err, req, res, next) {
-  console.error(err.stack || err.message);
+  if (!err.statusCode || err.statusCode >= 500) {
+    console.error(err.stack || err.message);
+  }
 
   // Mongoose validation error
   if (err.name === "ValidationError") {
