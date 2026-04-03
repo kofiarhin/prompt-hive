@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest --forceExit --detectOpenHandles",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "nodemon server/server.js",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "jest --forceExit --detectOpenHandles",
     "test:client": "npm run test --prefix client",
-    "client": "npm run dev --prefix client",
-    "server": "nodemon server/server.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix client",
+    "lint": "npm run lint --prefix client",
     "start": "node server/server.js"
   },
   "keywords": [],
@@ -34,7 +37,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/server/__tests__/**/*.test.js"],
+    "testMatch": [
+      "**/server/__tests__/**/*.test.js"
+    ],
     "globalSetup": "./server/__tests__/globalSetup.js",
     "globalTeardown": "./server/__tests__/globalTeardown.js"
   }

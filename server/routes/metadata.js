@@ -10,7 +10,9 @@ const {
   VISIBILITY_OPTIONS,
   ROLES,
   SORT_OPTIONS,
-} = require("../../shared/constants");
+  USER_STATUSES,
+  CONTENT_STATUSES,
+} = require("../../shared/metadata");
 
 router.get("/", (req, res) => {
   return success(res, {
@@ -21,6 +23,8 @@ router.get("/", (req, res) => {
     useCases: USE_CASES,
     visibilityOptions: VISIBILITY_OPTIONS,
     roles: ROLES,
+    userStatuses: USER_STATUSES,
+    contentStatuses: CONTENT_STATUSES,
     sortOptions: SORT_OPTIONS,
   });
 });

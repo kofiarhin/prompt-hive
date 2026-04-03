@@ -1,7 +1,9 @@
+const { getEnv } = require("./env");
 const mongoose = require("mongoose");
 
 async function connectDB() {
-  const conn = await mongoose.connect(process.env.MONGO_URI);
+  const { MONGO_URI } = getEnv();
+  const conn = await mongoose.connect(MONGO_URI);
   console.log(`MongoDB connected: ${conn.connection.host}`);
 }
 

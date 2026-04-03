@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { errorHandler } = require("./middleware/errorHandler");
+const { getEnv } = require("./config/env");
 
 const authRoutes = require("./routes/auth");
 const metadataRoutes = require("./routes/metadata");
@@ -14,11 +15,12 @@ const { optionalAuth } = require("./middleware/auth");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
+const env = getEnv();
 
 // Middleware
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL].filter(Boolean),
+    origin: [env.CLIENT_URL].filter(Boolean),
     credentials: true,
   })
 );

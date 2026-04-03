@@ -2,16 +2,21 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { success } = require("../utils/response");
 const AppError = require("../utils/AppError");
+const { getEnv } = require("../config/env");
 
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
+function getCookieOptions() {
+  const env = getEnv();
+  return {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: env.COOKIE_SAME_SITE,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+}
 
 function generateToken(id) {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  const env = getEnv();
+  return jwt.sign({ id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
 }
 
 function sanitizeUser(user) {
@@ -40,7 +45,7 @@ async function register(req, res, next) {
     const user = await User.create({ name, username, email, password });
     const token = generateToken(user._id);
 
-    res.cookie("token", token, COOKIE_OPTIONS);
+    res.cookie("token", token, getCookieOptions());
     return success(res, { user: sanitizeUser(user) }, {}, 201);
   } catch (err) {
     next(err);
@@ -63,7 +68,7 @@ async function login(req, res, next) {
     }
 
     const token = generateToken(user._id);
-    res.cookie("token", token, COOKIE_OPTIONS);
+    res.cookie("token", token, getCookieOptions());
     return success(res, { user: sanitizeUser(user) });
   } catch (err) {
     next(err);
@@ -71,7 +76,7 @@ async function login(req, res, next) {
 }
 
 async function logout(req, res) {
-  res.cookie("token", "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  res.cookie("token", "", { ...getCookieOptions(), maxAge: 0 });
   return success(res, { message: "Logged out" });
 }
 

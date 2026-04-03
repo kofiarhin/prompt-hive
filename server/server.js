@@ -3,11 +3,11 @@ require("dotenv").config();
 const { validateEnv } = require("./config/env");
 const { connectDB } = require("./config/db");
 
-validateEnv();
+const env = validateEnv();
 
 const app = require("./app");
 
-const port = process.env.PORT || 5000;
+const port = env.PORT;
 
 connectDB()
   .then(() => {
