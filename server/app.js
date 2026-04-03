@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { errorHandler } = require("./middleware/errorHandler");
 const { getEnv } = require("./config/env");
+const AppError = require("./utils/AppError");
 
 const authRoutes = require("./routes/auth");
 const metadataRoutes = require("./routes/metadata");
@@ -16,11 +17,24 @@ const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 const env = getEnv();
+const allowedOrigins = new Set(["http://localhost:5173", ...env.CLIENT_URLS]);
 
 // Middleware
 app.use(
   cors({
-    origin: [env.CLIENT_URL].filter(Boolean),
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      if (env.NODE_ENV === "development") {
+        console.warn(`[CORS] Blocked origin: ${origin}`);
+      }
+
+      return callback(
+        new AppError(`CORS blocked for origin: ${origin}`, 403, "CORS_ORIGIN_BLOCKED")
+      );
+    },
     credentials: true,
   })
 );

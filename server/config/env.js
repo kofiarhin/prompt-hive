@@ -28,19 +28,32 @@ function normalizeNodeEnv(value) {
   return value;
 }
 
+function parseOrigins(value) {
+  if (!value) return [];
+
+  return String(value)
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 function buildConfig(source = process.env) {
+  const nodeEnv = normalizeNodeEnv(source.NODE_ENV || DEFAULTS.NODE_ENV);
+  const clientUrl = source.CLIENT_URL || DEFAULTS.CLIENT_URL;
+
   const config = {
-    NODE_ENV: normalizeNodeEnv(source.NODE_ENV || DEFAULTS.NODE_ENV),
+    NODE_ENV: nodeEnv,
     PORT: toInt(source.PORT || DEFAULTS.PORT, "PORT"),
-    CLIENT_URL: source.CLIENT_URL || DEFAULTS.CLIENT_URL,
+    CLIENT_URL: clientUrl,
+    CLIENT_URLS: parseOrigins(clientUrl),
     MONGO_URI: source.MONGO_URI,
     JWT_SECRET: source.JWT_SECRET,
     JWT_EXPIRES_IN: source.JWT_EXPIRES_IN || DEFAULTS.JWT_EXPIRES_IN,
     COOKIE_SECURE:
       source.COOKIE_SECURE !== undefined
         ? toBool(source.COOKIE_SECURE)
-        : (source.NODE_ENV || DEFAULTS.NODE_ENV) === "production",
-    COOKIE_SAME_SITE: source.COOKIE_SAME_SITE || DEFAULTS.COOKIE_SAME_SITE,
+        : nodeEnv === "production",
+    COOKIE_SAME_SITE: (source.COOKIE_SAME_SITE || DEFAULTS.COOKIE_SAME_SITE).toLowerCase(),
   };
 
   const required = ["MONGO_URI", "JWT_SECRET"];
@@ -54,6 +67,10 @@ function buildConfig(source = process.env) {
 
   if (!["lax", "strict", "none"].includes(config.COOKIE_SAME_SITE)) {
     throw new Error("COOKIE_SAME_SITE must be one of: lax, strict, none");
+  }
+
+  if (config.COOKIE_SAME_SITE === "none" && !config.COOKIE_SECURE) {
+    throw new Error("COOKIE_SECURE must be true when COOKIE_SAME_SITE is 'none'");
   }
 
   return config;
@@ -73,4 +90,4 @@ function getEnv() {
   return env;
 }
 
-module.exports = { validateEnv, getEnv, buildConfig };
+module.exports = { validateEnv, getEnv, buildConfig, parseOrigins };

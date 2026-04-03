@@ -76,7 +76,11 @@ async function login(req, res, next) {
 }
 
 async function logout(req, res) {
-  res.cookie("token", "", { ...getCookieOptions(), maxAge: 0 });
+  res.cookie("token", "", {
+    ...getCookieOptions(),
+    maxAge: 0,
+    expires: new Date(0),
+  });
   return success(res, { message: "Logged out" });
 }
 

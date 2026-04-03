@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const AppError = require("../utils/AppError");
+const { getEnv } = require("../config/env");
+
+const env = getEnv();
 
 async function authenticate(req, res, next) {
   try {
@@ -9,7 +12,7 @@ async function authenticate(req, res, next) {
       throw new AppError("Authentication required", 401, "AUTH_REQUIRED");
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
@@ -45,7 +48,7 @@ async function optionalAuth(req, res, next) {
     const token = req.cookies?.token;
     if (!token) return next();
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
 
     if (user && user.status === "active") {
