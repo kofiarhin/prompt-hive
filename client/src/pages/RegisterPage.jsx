@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../features/auth/AuthContext";
+import { useAuth } from "../features/auth/useAuth";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
@@ -17,7 +17,7 @@ export default function RegisterPage() {
       toast.success("Account created!");
       navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Registration failed");
+      toast.error(err?.response?.data?.error?.message || err || "Registration failed");
     } finally {
       setLoading(false);
     }

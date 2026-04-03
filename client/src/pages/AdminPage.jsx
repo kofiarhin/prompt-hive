@@ -6,8 +6,8 @@ import EmptyState from "../components/ui/EmptyState";
 import toast from "react-hot-toast";
 import { Trash2, Users, FileText, Shield, ShieldOff } from "lucide-react";
 
-export default function AdminPage() {
-  const [tab, setTab] = useState("content");
+export default function AdminPage({ initialTab = "content", hideTabs = false }) {
+  const [tab, setTab] = useState(initialTab);
   const qc = useQueryClient();
 
   const contentQuery = useQuery({
@@ -53,23 +53,24 @@ export default function AdminPage() {
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Panel</h1>
 
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {tabs.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${
-              tab === key
-                ? "border-amber-500 text-amber-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <Icon size={16} /> {label}
-          </button>
-        ))}
-      </div>
+      {!hideTabs && (
+        <div className="flex gap-1 border-b border-gray-200 mb-6">
+          {tabs.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${
+                tab === key
+                  ? "border-amber-500 text-amber-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Content Management */}
       {tab === "content" && (
         <div>
           {contentQuery.isLoading ? (
@@ -102,9 +103,7 @@ export default function AdminPage() {
                           {item.visibility}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
-                        {item.createdBy?.username || "—"}
-                      </td>
+                      <td className="px-4 py-3 text-gray-500">{item.createdBy?.username || "—"}</td>
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => {
@@ -128,7 +127,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* User Management */}
       {tab === "users" && (
         <div>
           {usersQuery.isLoading ? (
@@ -165,10 +163,7 @@ export default function AdminPage() {
                       <td className="px-4 py-3 text-right flex justify-end gap-2">
                         <button
                           onClick={() =>
-                            roleMutation.mutate({
-                              id: u._id,
-                              role: u.role === "admin" ? "user" : "admin",
-                            })
+                            roleMutation.mutate({ id: u._id, role: u.role === "admin" ? "user" : "admin" })
                           }
                           className="text-amber-500 hover:text-amber-700"
                           title={u.role === "admin" ? "Demote to user" : "Promote to admin"}
@@ -183,9 +178,7 @@ export default function AdminPage() {
                             })
                           }
                           className={`text-sm px-2 py-0.5 rounded ${
-                            u.status === "active"
-                              ? "text-red-500 hover:bg-red-50"
-                              : "text-green-500 hover:bg-green-50"
+                            u.status === "active" ? "text-red-500 hover:bg-red-50" : "text-green-500 hover:bg-green-50"
                           }`}
                         >
                           {u.status === "active" ? "Suspend" : "Reactivate"}

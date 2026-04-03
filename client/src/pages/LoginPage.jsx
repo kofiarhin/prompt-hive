@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../features/auth/AuthContext";
+import { useAuth } from "../features/auth/useAuth";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -17,7 +17,7 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Login failed");
+      toast.error(err?.response?.data?.error?.message || err || "Login failed");
     } finally {
       setLoading(false);
     }

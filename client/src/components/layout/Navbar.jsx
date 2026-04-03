@@ -1,15 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../features/auth/AuthContext";
+import { useAuth } from "../../features/auth/useAuth";
 import { Search, Menu, X, LogOut, User, LayoutDashboard, Plus, Shield } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
+    queryClient.clear();
     navigate("/");
   };
 
@@ -28,7 +31,7 @@ export default function Navbar() {
             </Link>
             {user && (
               <>
-                <Link to="/create" className="text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                <Link to="/dashboard/content/new" className="text-gray-600 hover:text-gray-900 flex items-center gap-1">
                   <Plus size={16} />
                   Create
                 </Link>
@@ -37,7 +40,7 @@ export default function Navbar() {
                   Dashboard
                 </Link>
                 {user.role === "admin" && (
-                  <Link to="/admin" className="text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                  <Link to="/admin/content" className="text-gray-600 hover:text-gray-900 flex items-center gap-1">
                     <Shield size={16} />
                     Admin
                   </Link>
@@ -89,14 +92,14 @@ export default function Navbar() {
           </Link>
           {user ? (
             <>
-              <Link to="/create" className="block py-2 text-gray-600" onClick={() => setMenuOpen(false)}>
+              <Link to="/dashboard/content/new" className="block py-2 text-gray-600" onClick={() => setMenuOpen(false)}>
                 Create
               </Link>
               <Link to="/dashboard" className="block py-2 text-gray-600" onClick={() => setMenuOpen(false)}>
                 Dashboard
               </Link>
               {user.role === "admin" && (
-                <Link to="/admin" className="block py-2 text-gray-600" onClick={() => setMenuOpen(false)}>
+                <Link to="/admin/content" className="block py-2 text-gray-600" onClick={() => setMenuOpen(false)}>
                   Admin
                 </Link>
               )}

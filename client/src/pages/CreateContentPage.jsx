@@ -16,8 +16,8 @@ const INITIAL_FORM = {
   visibility: "private",
 };
 
-export default function CreateContentPage() {
-  const [form, setForm] = useState(INITIAL_FORM);
+export default function CreateContentPage({ defaultVisibility = "private" }) {
+  const [form, setForm] = useState({ ...INITIAL_FORM, visibility: defaultVisibility });
   const metadata = useMetadata();
   const createMutation = useCreateContent();
   const navigate = useNavigate();

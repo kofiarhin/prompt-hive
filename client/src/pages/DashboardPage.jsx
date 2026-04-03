@@ -9,8 +9,8 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 import { Plus, Bookmark, FileText, Trash2, Edit, X } from "lucide-react";
 
-export default function DashboardPage() {
-  const [tab, setTab] = useState("content");
+export default function DashboardPage({ initialTab = "content", hideTabs = false }) {
+  const [tab, setTab] = useState(initialTab);
   const myContent = useMyContent();
   const saved = useSavedContent();
   const unsaveMutation = useUnsaveContent();
@@ -26,31 +26,31 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <Link
-          to="/create"
+          to="/dashboard/content/new"
           className="bg-amber-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-amber-600"
         >
           <Plus size={18} /> Create
         </Link>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {tabs.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${
-              tab === key
-                ? "border-amber-500 text-amber-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <Icon size={16} /> {label}
-          </button>
-        ))}
-      </div>
+      {!hideTabs && (
+        <div className="flex gap-1 border-b border-gray-200 mb-6">
+          {tabs.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${
+                tab === key
+                  ? "border-amber-500 text-amber-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* My Content */}
       {tab === "content" && (
         <>
           {myContent.isLoading ? (
@@ -62,7 +62,7 @@ export default function DashboardPage() {
                   <ContentCard content={item} />
                   <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
                     <Link
-                      to={`/edit/${item._id}`}
+                      to={`/dashboard/content/${item._id}/edit`}
                       className="bg-white border border-gray-200 p-1.5 rounded-lg shadow-sm hover:bg-gray-50"
                     >
                       <Edit size={14} />
@@ -88,7 +88,6 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Saved */}
       {tab === "saved" && (
         <>
           {saved.isLoading ? (

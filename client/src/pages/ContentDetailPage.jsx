@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useContentBySlug } from "../hooks/queries/useContent";
-import { useAuth } from "../features/auth/AuthContext";
+import { useAuth } from "../features/auth/useAuth";
 import { useVote } from "../hooks/mutations/useVoteMutation";
-import { useSaveContent, useUnsaveContent } from "../hooks/mutations/useSaveMutations";
+import { useSaveContent } from "../hooks/mutations/useSaveMutations";
 import { useCopyContent } from "../hooks/mutations/useContentMutations";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import ErrorMessage from "../components/ui/ErrorMessage";
@@ -26,7 +26,6 @@ export default function ContentDetailPage() {
   const { data, isLoading, error } = useContentBySlug(slug);
   const voteMutation = useVote();
   const saveMutation = useSaveContent();
-  const unsaveMutation = useUnsaveContent();
   const copyMutation = useCopyContent();
 
   if (isLoading) return <LoadingSpinner />;

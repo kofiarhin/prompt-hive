@@ -6,54 +6,87 @@ import ExplorePage from "../pages/ExplorePage";
 import ContentDetailPage from "../pages/ContentDetailPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
-import DashboardPage from "../pages/DashboardPage";
-import CreateContentPage from "../pages/CreateContentPage";
-import EditContentPage from "../pages/EditContentPage";
-import AdminPage from "../pages/AdminPage";
+import DashboardOverviewPage from "../pages/DashboardOverviewPage";
+import DashboardSavedPage from "../pages/DashboardSavedPage";
+import DashboardContentPage from "../pages/DashboardContentPage";
+import DashboardContentCreatePage from "../pages/DashboardContentCreatePage";
+import DashboardContentEditPage from "../pages/DashboardContentEditPage";
+import AdminContentPage from "../pages/AdminContentPage";
+import AdminContentCreatePage from "../pages/AdminContentCreatePage";
+import AdminUsersPage from "../pages/AdminUsersPage";
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/explore" element={<ExplorePage />} />
         <Route path="/content/:slug" element={<ContentDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <DashboardOverviewPage />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/create"
+          path="/dashboard/saved"
           element={
             <ProtectedRoute>
-              <CreateContentPage />
+              <DashboardSavedPage />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/edit/:id"
+          path="/dashboard/content"
           element={
             <ProtectedRoute>
-              <EditContentPage />
+              <DashboardContentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/content/new"
+          element={
+            <ProtectedRoute>
+              <DashboardContentCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/content/:id/edit"
+          element={
+            <ProtectedRoute>
+              <DashboardContentEditPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Admin */}
         <Route
-          path="/admin"
+          path="/admin/content"
           element={
             <ProtectedRoute adminOnly>
-              <AdminPage />
+              <AdminContentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/content/new"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminContentCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute adminOnly>
+              <AdminUsersPage />
             </ProtectedRoute>
           }
         />
