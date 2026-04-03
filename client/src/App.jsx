@@ -1,12 +1,10 @@
-import React from "react";
-import Header from "./components/Header/Header";
+import Providers from "./app/Providers";
+import AppRouter from "./routes/AppRouter";
 
-const App = () => {
+export default function App() {
   return (
-    <div>
-      <Header />
-    </div>
+    <Providers>
+      <AppRouter />
+    </Providers>
   );
-};
-
-export default App;
+}

@@ -1,10 +1,9 @@
 # PromptHive — Full Project Brief
 
 ## Overview
-**PromptHive** is a web platform where users can discover, view, copy, save, rate, and organize **AI prompts** and **AI skills**.
+**PromptHive** is a web platform where users can discover, view, copy, save, vote on, and organize **AI prompts** and **AI skills**.
 
 The platform supports two main content types:
-
 - **Prompts** — plain copy/paste prompt text
 - **Skills** — structured reusable AI workflows, including:
   - Claude skills
@@ -28,7 +27,6 @@ Admin-created content is **public by default**.
 
 # 1. Product Vision
 PromptHive should let users:
-
 - search prompts and skills
 - browse cards in a clean public catalog
 - click any card to open a full detail page
@@ -42,7 +40,6 @@ PromptHive should let users:
 - discover the best content through community ranking
 
 Admins should be able to:
-
 - create public platform content
 - seed the platform with high-quality prompts and skills
 - manage content
@@ -137,6 +134,8 @@ A structured reusable workflow or instruction block for AI-powered work.
 - manage all content
 - manage users
 - seed platform inventory
+- change user role
+- suspend/reactivate users
 
 ---
 
@@ -157,7 +156,7 @@ Public content:
 
 ## Private content
 Private content:
-- is visible only to its owner
+- is visible only to its owner and admins
 - does not appear in public discovery
 - cannot be publicly voted on
 - can only be used inside the owner’s account
@@ -166,6 +165,17 @@ Private content:
 Admin-created content:
 - is public by default
 - appears in discovery immediately
+
+## Ownership
+- only owners can edit/delete their own content unless admin
+- saved content does not grant edit rights
+- if a public item becomes private, it must disappear from public discovery immediately
+
+## Deletion
+- production deletion uses soft delete
+- soft-deleted content must not appear in public discovery
+- save, vote, and copy actions on deleted content must be blocked
+- deleted content references in saved lists should be handled gracefully
 
 ---
 
@@ -199,7 +209,8 @@ Admin-created content:
 1. admin logs in
 2. creates public prompts or skills
 3. content appears immediately in public catalog
-4. admin continues seeding and managing content
+4. admin manages users and content
+5. admin continues seeding and shaping discovery quality
 
 ---
 
@@ -222,6 +233,7 @@ Admin-created content:
 ## Admin pages
 - `/admin/content` — admin content list/manage
 - `/admin/content/new` — create admin content
+- `/admin/users` — admin user list/manage
 
 For MVP, this is enough.
 
@@ -233,7 +245,7 @@ The homepage should:
 - show the value clearly
 - direct users into search/discovery
 - showcase a few featured public prompts/skills
-- push sign-up for saving and rating
+- push sign-up for saving and voting
 
 ## Homepage sections
 - navbar
@@ -273,9 +285,10 @@ The explore page is the main discovery engine.
 - Highest Rated
 - Most Upvoted
 
-MVP can start with:
-- newest
-- highest rated
+MVP sort behavior should be deterministic:
+- `newest` → `createdAt desc`
+- `rating` → `rating desc`, then `upvoteCount desc`, then `createdAt desc`
+- `upvotes` → `upvoteCount desc`, then `createdAt desc`
 
 ---
 
@@ -332,7 +345,10 @@ The page should adapt based on content type.
 - downvote
 - copy
 
-This should be the main conversion page.
+### Access behavior
+- public content is readable by everyone
+- private content is readable only by its owner or admin
+- private content should not leak through public slug lookups
 
 ---
 
@@ -362,7 +378,7 @@ Users can:
 - if upvoted, switch to downvote
 
 ## Star display
-Stars are **display-only**, derived from the vote balance or rating formula.
+Stars are **display-only**, derived from the vote formula.
 
 Users are not submitting 1–5 stars directly.  
 Users interact only through upvote/downvote.
@@ -397,6 +413,11 @@ Saved items appear as cards.
 - remove saved item
 
 The order must persist in the database.
+
+## Edge handling
+- duplicate saves must be prevented
+- deleted or inaccessible saved references should be handled safely
+- reorder should update only the current user’s saved items
 
 ---
 
@@ -442,7 +463,7 @@ Choose provider:
 - can be saved by others
 
 ### Private
-- stays visible only to owner
+- stays visible only to owner and admin
 
 ---
 
@@ -451,6 +472,10 @@ Admin should be able to:
 - create public prompts
 - create public skills
 - manage platform seed content
+- edit/delete any content
+- list users
+- change roles
+- suspend/reactivate users
 
 Admin content should:
 - be public by default
@@ -497,6 +522,7 @@ Fields:
 - role
 - avatar
 - bio
+- status
 
 ## Content
 Fields:
@@ -518,6 +544,9 @@ Fields:
 - downvoteCount
 - score
 - rating
+- isFeatured
+- featuredOrder
+- isDeleted
 - timestamps
 
 ## SavedContent
@@ -560,7 +589,7 @@ Fields:
 - Tailwind CSS
 - React Router
 - TanStack Query
-- Redux Toolkit only if needed for global auth/UI state
+- Redux Toolkit only for global auth/UI state
 - dnd-kit for drag and drop
 
 ## Backend
@@ -568,7 +597,7 @@ Fields:
 - Express
 - MongoDB
 - Mongoose
-- Zod or similar request validation
+- Zod
 - centralized error handling
 
 ## Testing
@@ -579,31 +608,46 @@ Fields:
 
 # 21. Architecture Requirements
 
+## Root
+```bash
+/package.json
+/server
+/client
+```
+
 ## Frontend structure
-- `services/` for raw API calls
-- `hooks/queries/` for read operations
-- `hooks/mutations/` for write operations
-- `components/` for reusable UI
-- `pages/` for route pages
+- `client/src/app/`
+- `client/src/features/`
+- `client/src/services/`
+- `client/src/hooks/queries/`
+- `client/src/hooks/mutations/`
+- `client/src/components/`
+- `client/src/pages/`
+- `client/src/routes/`
+- `client/src/lib/`
+- `client/src/utils/`
 
 ## Backend structure
-- `config/`
-- `controllers/`
-- `middleware/`
-- `models/`
-- `routes/`
-- `utils/`
+- `server/config/`
+- `server/controllers/`
+- `server/middleware/`
+- `server/models/`
+- `server/routes/`
+- `server/utils/`
+- `server/validators/`
 
 ## Rules
 - keep API logic out of components
 - keep server state out of Redux
 - keep components focused on rendering and interaction
+- keep request validation on the server
+- use consistent API response shapes
 
 ---
 
 # 22. Important MVP Edge Rules
 
-## Recommended MVP decisions
+## Required MVP decisions
 - prevent duplicate saves for the same user/content pair
 - prevent duplicate votes for the same user/content pair
 - use soft handling for missing/deleted content references
@@ -611,6 +655,7 @@ Fields:
 - private content must never appear in public search
 - if a public item becomes private, remove it from public discovery immediately
 - keep slug generation collision-safe
+- deleted content must not accept vote/save/copy mutations
 
 ---
 
@@ -627,7 +672,8 @@ Fields:
 - upvote/downvote
 - draggable saved dashboard
 - create prompt/skill
-- admin create content
+- admin create/manage content
+- admin user management basics
 
 ## Not in MVP
 - libraries
@@ -646,7 +692,6 @@ These can come later.
 
 # 24. Success Criteria for MVP
 The MVP is successful if users can:
-
 - discover public prompts and skills
 - click into detail pages
 - copy useful content
@@ -660,17 +705,16 @@ The MVP is successful if users can:
 
 # 25. Product Summary
 PromptHive is a **Prompt + Skill discovery and organization platform** where users can:
-
 - search public prompts and skills
 - open full detail views
-- copy, save, and rate content
+- copy, save, and vote on content
 - organize saved items in a draggable dashboard
 - create public or private prompts and skills
 - help rank content through voting
 
 Admins can:
 - seed the public catalog with platform content
-- manage the initial content base
+- manage content and users
 
 For MVP, PromptHive should focus on one core promise:
 
