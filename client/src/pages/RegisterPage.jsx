@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/useAuth";
 import toast from "react-hot-toast";
@@ -8,17 +8,26 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const submittingRef = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading || submittingRef.current) return;
+
+    submittingRef.current = true;
     setLoading(true);
     try {
       await register(form);
       toast.success("Account created!");
       navigate("/");
     } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error(err.response?.data?.message || "Account already exists. Please sign in instead.");
+        return;
+      }
       toast.error(err?.response?.data?.error?.message || err || "Registration failed");
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
