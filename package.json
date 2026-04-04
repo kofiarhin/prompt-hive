@@ -9,7 +9,7 @@
     "test": "npm run test:server && npm run test:client",
     "test:server": "jest --forceExit --detectOpenHandles",
     "test:client": "npm run test --prefix client",
-    "build": "npm run build --prefix client",
+    "build:client": "npm run build --prefix client",
     "lint": "npm run lint --prefix client",
     "start": "node server/server.js"
   },
