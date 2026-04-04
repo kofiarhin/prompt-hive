@@ -17,21 +17,9 @@ const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 const app = express();
 const env = getEnv();
 
-const allowedOrigins = new Set(["http://localhost:5173", ...env.CLIENT_URLS]);
-
 const corsOptions = {
   origin(origin, callback) {
-    // allow non-browser tools / server-to-server requests
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.has(origin)) {
-      return callback(null, true);
-    }
-
-    console.warn(`[CORS] Blocked origin: ${origin}`);
-    return callback(null, false);
+    return callback(null, true);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -43,7 +31,6 @@ app.set("trust proxy", 1);
 
 // CORS must be first
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -66,7 +53,7 @@ app.get("/", (req, res) => {
   res.json({
     message: "PromptHive API",
     env: env.NODE_ENV,
-    allowedOrigins: [...allowedOrigins],
+    cors: "all-origins",
   });
 });
 

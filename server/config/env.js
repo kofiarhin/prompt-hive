@@ -40,6 +40,7 @@ function parseOrigins(value) {
 function buildConfig(source = process.env) {
   const nodeEnv = normalizeNodeEnv(source.NODE_ENV || DEFAULTS.NODE_ENV);
   const clientUrl = source.CLIENT_URL || DEFAULTS.CLIENT_URL;
+  const defaultCookieSameSite = nodeEnv === "production" ? "none" : DEFAULTS.COOKIE_SAME_SITE;
 
   const config = {
     NODE_ENV: nodeEnv,
@@ -53,7 +54,7 @@ function buildConfig(source = process.env) {
       source.COOKIE_SECURE !== undefined
         ? toBool(source.COOKIE_SECURE)
         : nodeEnv === "production",
-    COOKIE_SAME_SITE: (source.COOKIE_SAME_SITE || DEFAULTS.COOKIE_SAME_SITE).toLowerCase(),
+    COOKIE_SAME_SITE: (source.COOKIE_SAME_SITE || defaultCookieSameSite).toLowerCase(),
   };
 
   const required = ["MONGO_URI", "JWT_SECRET"];
