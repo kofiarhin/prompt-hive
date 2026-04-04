@@ -18,9 +18,7 @@ const app = express();
 const env = getEnv();
 
 const corsOptions = {
-  origin(origin, callback) {
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -29,7 +27,8 @@ const corsOptions = {
 
 app.set("trust proxy", 1);
 
-// CORS must be first
+// CORS must be first — handle preflight for all routes
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
 
 app.use(express.json());
