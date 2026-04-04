@@ -3,7 +3,6 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { errorHandler } = require("./middleware/errorHandler");
 const { getEnv } = require("./config/env");
-const AppError = require("./utils/AppError");
 
 const authRoutes = require("./routes/auth");
 const metadataRoutes = require("./routes/metadata");
@@ -17,27 +16,35 @@ const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 const env = getEnv();
+
 const allowedOrigins = new Set(["http://localhost:5173", ...env.CLIENT_URLS]);
 
-// Middleware
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin(origin, callback) {
+    // allow non-browser tools / server-to-server requests
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (env.NODE_ENV === "development") {
-        console.warn(`[CORS] Blocked origin: ${origin}`);
-      }
+    if (allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
 
-      return callback(
-        new AppError(`CORS blocked for origin: ${origin}`, 403, "CORS_ORIGIN_BLOCKED")
-      );
-    },
-    credentials: true,
-  })
-);
+    console.warn(`[CORS] Blocked origin: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.set("trust proxy", 1);
+
+// CORS must be first
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -56,7 +63,11 @@ app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/", (req, res) => {
-  res.json({ message: "PromptHive API" });
+  res.json({
+    message: "PromptHive API",
+    env: env.NODE_ENV,
+    allowedOrigins: [...allowedOrigins],
+  });
 });
 
 // Error handler
