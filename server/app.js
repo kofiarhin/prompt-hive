@@ -19,8 +19,13 @@ const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 const app = express();
 const env = getEnv();
 
-app.use(cors({ origin: "*" }));
-app.options(/.*/, cors());
+const corsOptions = {
+  origin: [env.CLIENT_URL].filter(Boolean),
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
