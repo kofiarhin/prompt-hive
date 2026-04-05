@@ -17,6 +17,51 @@ const { optionalAuth } = require("./middleware/auth");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
+
+const allowedOrigins = (
+  process.env.CLIENT_URLS || process.env.CLIENT_URL || "http://localhost:5173"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const requestOrigin = req.headers.origin;
+  const isAllowedOrigin =
+    requestOrigin && allowedOrigins.includes(requestOrigin);
+  const originalWriteHead = res.writeHead.bind(res);
+
+  res.writeHead = (...args) => {
+    if (isAllowedOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Vary", "Origin");
+    }
+
+    return originalWriteHead(...args);
+  };
+
+  if (isAllowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
 const env = getEnv();
 
 const corsOptions = {
