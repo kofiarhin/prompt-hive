@@ -134,6 +134,19 @@ describe("Content API", () => {
       expect(res.body.data.content.title).toBe("Updated Title");
     });
 
+    it("requires skill provider when changing type to skill", async () => {
+      const { cookies } = await createUser();
+      const content = await createTestContent(cookies, { type: "prompt", skillProvider: null });
+
+      const res = await request(app)
+        .put(`/api/content/${content._id}`)
+        .set("Cookie", cookies)
+        .send({ type: "skill" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toBe("Skill provider is required for skills");
+    });
+
     it("blocks non-owner from updating", async () => {
       const { cookies } = await createUser();
       const content = await createTestContent(cookies);
