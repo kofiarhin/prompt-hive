@@ -11,13 +11,18 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     try {
-      await login(form);
+      await login({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
       toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
-      toast.error(err?.response?.data?.error?.message || err || "Login failed");
+      toast.error(typeof err === "string" ? err : err?.message || "Login failed");
     } finally {
       setLoading(false);
     }

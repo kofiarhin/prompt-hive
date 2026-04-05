@@ -23,6 +23,28 @@ function validateForm(form) {
   return errors;
 }
 
+function normalizeServerValidation(details = []) {
+  if (!Array.isArray(details)) return {};
+
+  const mapped = {};
+  details.forEach((detail) => {
+    if (detail && typeof detail === "object" && detail.field && detail.message) {
+      mapped[detail.field] = detail.message;
+      return;
+    }
+
+    if (typeof detail !== "string") return;
+
+    const lower = detail.toLowerCase();
+    if (lower.includes("username")) mapped.username = detail;
+    else if (lower.includes("email")) mapped.email = detail;
+    else if (lower.includes("password")) mapped.password = detail;
+    else if (lower.includes("name")) mapped.name = detail;
+  });
+
+  return mapped;
+}
+
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", username: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -44,7 +66,14 @@ export default function RegisterPage() {
     setFieldErrors({});
     setGeneralError("");
 
-    const errors = validateForm(form);
+    const normalizedForm = {
+      name: form.name.trim(),
+      username: form.username.trim(),
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+    };
+
+    const errors = validateForm(normalizedForm);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -53,24 +82,25 @@ export default function RegisterPage() {
     submittingRef.current = true;
     setLoading(true);
     try {
-      await register(form);
+      await register(normalizedForm);
       toast.success("Account created!");
       navigate("/");
     } catch (err) {
-      if (err?.status === 409) {
-        if (err.message?.includes("Email") || err.message?.includes("email")) {
+      if (err?.status === 409 || err?.code === "DUPLICATE") {
+        if ((err.message || "").toLowerCase().includes("email")) {
           setFieldErrors({ email: "An account with this email already exists.", emailIsConflict: true });
         } else {
           setFieldErrors({ username: "This username is already taken. Try another one." });
         }
       } else if (err?.status === 400 && err?.code === "VALIDATION_ERROR") {
-        const mapped = {};
-        (err.details || []).forEach((d) => {
-          mapped[d.field] = d.message;
-        });
-        setFieldErrors(mapped);
+        const mapped = normalizeServerValidation(err.details);
+        if (Object.keys(mapped).length > 0) {
+          setFieldErrors(mapped);
+        } else {
+          setGeneralError(err.message || "Validation failed. Please review your input.");
+        }
       } else {
-        setGeneralError("We couldn't create your account. Please try again.");
+        setGeneralError(err?.message || "We couldn't create your account. Please try again.");
       }
     } finally {
       submittingRef.current = false;

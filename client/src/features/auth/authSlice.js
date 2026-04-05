@@ -1,10 +1,37 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { authService } from "../../services/authService";
 
+const AUTH_STORAGE_KEY = "prompthive_auth_user";
+
+function loadPersistedUser() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistUser(user) {
+  try {
+    if (user) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  } catch {
+    // no-op
+  }
+}
+
+const persistedUser = loadPersistedUser();
+
 const initialState = {
-  user: null,
-  isAuthenticated: false,
-  status: "idle",
+  user: persistedUser,
+  isAuthenticated: Boolean(persistedUser),
+  status: persistedUser ? "authenticated" : "idle",
   error: null,
 };
 
@@ -63,16 +90,19 @@ const authSlice = createSlice({
           state.status = "authenticated";
           state.user = action.payload;
           state.isAuthenticated = true;
+          persistUser(action.payload);
         } else {
           state.status = "unauthenticated";
           state.user = null;
           state.isAuthenticated = false;
+          persistUser(null);
         }
       })
       .addCase(restoreSession.rejected, (state) => {
         state.status = "unauthenticated";
         state.user = null;
         state.isAuthenticated = false;
+        persistUser(null);
       })
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
@@ -82,6 +112,7 @@ const authSlice = createSlice({
         state.status = "authenticated";
         state.user = action.payload;
         state.isAuthenticated = true;
+        persistUser(action.payload);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "unauthenticated";
@@ -95,6 +126,7 @@ const authSlice = createSlice({
         state.status = "authenticated";
         state.user = action.payload;
         state.isAuthenticated = true;
+        persistUser(action.payload);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.status = "unauthenticated";
@@ -105,6 +137,7 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
+        persistUser(null);
       });
   },
 });
