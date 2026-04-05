@@ -8,5 +8,16 @@ if (!baseURL) {
 
 export const api = axios.create({
   baseURL,
-withCredentials: true,
+  withCredentials: true,
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isAuthRoute = error.config?.url?.startsWith("/auth/");
+    if (error.response?.status === 401 && !isAuthRoute) {
+      window.location.replace("/login");
+    }
+    return Promise.reject(error);
+  }
+);

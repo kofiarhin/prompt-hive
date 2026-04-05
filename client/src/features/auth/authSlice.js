@@ -59,9 +59,15 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(restoreSession.fulfilled, (state, action) => {
-        state.status = "authenticated";
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        if (action.payload) {
+          state.status = "authenticated";
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        } else {
+          state.status = "unauthenticated";
+          state.user = null;
+          state.isAuthenticated = false;
+        }
       })
       .addCase(restoreSession.rejected, (state) => {
         state.status = "unauthenticated";
