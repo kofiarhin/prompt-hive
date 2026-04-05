@@ -31,7 +31,12 @@ export const registerUser = createAsyncThunk("auth/register", async (payload, { 
     const res = await authService.register(payload);
     return res.data.data.user;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.error?.message || "Registration failed");
+    return rejectWithValue({
+      message: error.response?.data?.error?.message || "Registration failed",
+      code: error.response?.data?.error?.code,
+      details: error.response?.data?.error?.details || [],
+      status: error.response?.status,
+    });
   }
 });
 

@@ -8,5 +8,5 @@ if (!baseURL) {
 
 export const api = axios.create({
   baseURL,
-  withCredentials: true,
+withCredentials: true,
 });
