@@ -92,8 +92,14 @@ async function updateContent(req, res, next) {
     const finalType = updates.type || content.type;
     if (finalType === "prompt") {
       updates.skillProvider = null;
-    } else if (finalType === "skill" && updates.skillProvider === undefined) {
-      // keep existing
+    } else if (finalType === "skill") {
+      const finalProvider = updates.skillProvider !== undefined
+        ? updates.skillProvider
+        : content.skillProvider;
+
+      if (!finalProvider) {
+        throw new AppError("Skill provider is required for skills", 400, "VALIDATION_ERROR");
+      }
     }
 
     Object.assign(content, updates);
