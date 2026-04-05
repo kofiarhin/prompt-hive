@@ -10,9 +10,6 @@ export function useCreateContent() {
       qc.invalidateQueries({ queryKey: ["content"] });
       toast.success("Content created!");
     },
-    onError: (err) => {
-      toast.error(err.response?.data?.error?.message || "Failed to create content");
-    },
   });
 }
 
