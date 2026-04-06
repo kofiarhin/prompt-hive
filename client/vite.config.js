@@ -1,12 +1,50 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig, mergeConfig } from 'vite'
+import baseConfig from './vite.config.base.js'
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  test: {
-    environment: "jsdom",
-    globals: true,
-    setupFiles: ["./test/setup.js"],
+const performanceConfig = {
+  resolve: {
+    dedupe: ['react', 'react-dom'],
   },
-});
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
+  esbuild: {
+    legalComments: 'none',
+  },
+  build: {
+    target: 'es2020',
+    sourcemap: false,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return undefined
+          }
+
+          if (id.includes('react-router')) {
+            return 'vendor-router'
+          }
+
+          if (id.includes('@tanstack')) {
+            return 'vendor-query'
+          }
+
+          if (id.includes('react') || id.includes('scheduler')) {
+            return 'vendor-react'
+          }
+
+          return 'vendor'
+        },
+      },
+    },
+  },
+}
+
+export default defineConfig((env) => {
+  const resolvedBaseConfig = typeof baseConfig === 'function' ? baseConfig(env) : baseConfig
+
+  return mergeConfig(resolvedBaseConfig, performanceConfig)
+})
